@@ -1,0 +1,70 @@
+const API_BASE = '/api';
+
+export const api = {
+  async uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Upload failed');
+    }
+    return res.json();
+  },
+
+  async agentChat(question, k = 6, model = null, fileName = null) {
+    const body = { question, k };
+    if (model) body.model = model;
+    if (fileName) body.file_name = fileName;
+    const res = await fetch(`${API_BASE}/agent-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Query failed');
+    }
+    return res.json();
+  },
+
+  async directChat(question, k = 6, model = null) {
+    const body = { question, k };
+    if (model) body.model = model;
+    const res = await fetch(`${API_BASE}/chat?stream=false`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Query failed');
+    }
+    return res.json();
+  },
+
+  async getModels() {
+    const res = await fetch(`${API_BASE}/models`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.models || [];
+  },
+};
+
+// Workspace localStorage persistence
+const WS_KEY = 'documind_workspace_docs';
+
+export const workspace = {
+  getDocs() {
+    try { return JSON.parse(localStorage.getItem(WS_KEY) || '[]'); }
+    catch { return []; }
+  },
+  addDoc(doc) {
+    const docs = this.getDocs();
+    const idx = docs.findIndex(d => d.name === doc.name);
+    if (idx !== -1) docs[idx] = doc;
+    else docs.push(doc);
+    localStorage.setItem(WS_KEY, JSON.stringify(docs));
+  },
+  getCount() { return this.getDocs().length; },
+};

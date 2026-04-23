@@ -1,0 +1,40 @@
+# DocuMind Project Gitignore
+
+# ─── Environment & Secrets ───
+.env
+.env.*
+!.env.example
+
+# ─── Logs & Documentation ───
+log.md
+*.log
+
+# ─── Python Backend ───
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# ─── Data & Vector DB ───
+# Ignore uploaded files and vector db, but allow the data directory itself
+data/uploads/*
+!data/uploads/.gitkeep
+data/chroma_db/
+
+# ─── React Frontend (Vite) ───
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.eslintcache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# ─── OS / System Files ───
+.DS_Store
+Thumbs.db
