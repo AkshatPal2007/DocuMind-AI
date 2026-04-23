@@ -7,10 +7,10 @@ Model format: "provider/model-name"
   e.g. "gemini/gemini-2.5-flash", "nvidia/meta/llama-3.3-70b-instruct", "groq/llama-3.1-8b-instant"
 """
 
-import os
-from dotenv import load_dotenv
+from backend.core.config import settings
+from backend.core.logger import get_logger
 
-load_dotenv()
+logger = get_logger(__name__)
 
 # ── Available Models Registry ────────────────────────────────────────────
 
@@ -66,14 +66,14 @@ AVAILABLE_MODELS = [
     },
 ]
 
-DEFAULT_MODEL_ID = "nvidia/meta/llama-3.3-70b-instruct"
+DEFAULT_MODEL_ID = settings.DEFAULT_MODEL_ID
 
 
 def get_available_models() -> list:
     """Return models that have a valid API key configured."""
     available = []
     for m in AVAILABLE_MODELS:
-        key = os.getenv(m["env_key"], "")
+        key = getattr(settings, m["env_key"], "")
         if key:
             available.append({
                 "id": m["id"],
@@ -99,9 +99,10 @@ _clients = {}
 def _get_gemini_client():
     if "gemini" not in _clients:
         from google import genai
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = settings.GEMINI_API_KEY
         if not api_key:
             raise RuntimeError("GEMINI_API_KEY not set")
+        logger.info("Gemini client initialized")
         _clients["gemini"] = genai.Client(api_key=api_key)
     return _clients["gemini"]
 
@@ -109,9 +110,10 @@ def _get_gemini_client():
 def _get_nvidia_client():
     if "nvidia" not in _clients:
         from openai import OpenAI
-        api_key = os.getenv("NVIDIA_API_KEY")
+        api_key = settings.NVIDIA_API_KEY
         if not api_key:
             raise RuntimeError("NVIDIA_API_KEY not set")
+        logger.info("NVIDIA client initialized")
         _clients["nvidia"] = OpenAI(
             base_url="https://integrate.api.nvidia.com/v1",
             api_key=api_key,
@@ -122,9 +124,10 @@ def _get_nvidia_client():
 def _get_groq_client():
     if "groq" not in _clients:
         from groq import Groq
-        api_key = os.getenv("GROQ_API_KEY")
+        api_key = settings.GROQ_API_KEY
         if not api_key:
             raise RuntimeError("GROQ_API_KEY not set")
+        logger.info("Groq client initialized")
         _clients["groq"] = Groq(api_key=api_key)
     return _clients["groq"]
 
@@ -146,6 +149,8 @@ def generate(
     config = _resolve_model(model_id)
     provider = config["provider"]
     model_name = config["model"]
+
+    logger.info("LLM generate", extra={"provider": provider, "model": model_name})
 
     if provider == "gemini":
         return _generate_gemini(system_prompt, user_prompt, model_name, json_mode)

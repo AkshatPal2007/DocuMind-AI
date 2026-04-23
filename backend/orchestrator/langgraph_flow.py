@@ -26,8 +26,12 @@ from backend.agents.reasoning_agent import ReasoningAgent
 from backend.agents.critique_agent import CritiqueAgent
 from backend.agents.summary_agent import SummaryAgent
 from backend.schemas.response import SourceChunk
+from backend.core.config import settings
+from backend.core.logger import get_logger
 
-MAX_RETRIES = 2
+logger = get_logger(__name__)
+
+MAX_RETRIES = settings.MAX_RETRIES
 
 
 # ── Graph State ──────────────────────────────────────────────────────────
@@ -72,11 +76,11 @@ _summary_agent = SummaryAgent()
 
 def retrieve_node(state: PipelineState) -> dict:
     """Run the Retrieval Agent."""
-    # Use refined_query if available (from a critique retry), else original question
     query = state.get("refined_query") or state["question"]
     k = state.get("k", 4)
     file_name = state.get("file_name")
 
+    logger.info("⮞ Retrieval Agent", extra={"query": query[:60], "k": k, "file": file_name})
     result = _retrieval_agent.run(query, k=k, file_name=file_name)
 
     # Build source metadata list
@@ -99,6 +103,7 @@ def retrieve_node(state: PipelineState) -> dict:
 
 def reasoning_node(state: PipelineState) -> dict:
     """Run the Reasoning Agent."""
+    logger.info("⮞ Reasoning Agent", extra={"model": state.get("model_id")})
     raw_answer = _reasoning_agent.run(
         question=state["question"],
         context=state["context"],
@@ -120,6 +125,7 @@ def rewrite_query_on_failure(original: str, critique_reason: str, attempt: int) 
 
 def critique_node(state: PipelineState) -> dict:
     """Run the Critique Agent."""
+    logger.info("⮞ Critique Agent", extra={"attempt": state.get("attempt", 0) + 1})
     result = _critique_agent.run(
         question=state["question"],
         context=state["context"],
@@ -144,6 +150,7 @@ def critique_node(state: PipelineState) -> dict:
 
 def summary_node(state: PipelineState) -> dict:
     """Run the Summary Agent."""
+    logger.info("⮞ Summary Agent")
     final_answer = _summary_agent.run(
         state["raw_answer"],
         model_id=state.get("model_id"),
@@ -204,6 +211,10 @@ def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str
     Returns:
         dict with keys: question, answer, sources, attempts, grounded, critique_reason
     """
+    logger.info("━━━ Pipeline START ━━━", extra={
+        "question": question[:80], "model": model_id, "file": file_name
+    })
+
     initial_state = {
         "question": question,
         "k": k,
@@ -222,7 +233,7 @@ def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str
 
     final_state = pipeline.invoke(initial_state)
 
-    return {
+    result = {
         "question": final_state["question"],
         "answer": final_state["final_answer"],
         "sources": [
@@ -232,3 +243,9 @@ def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str
         "grounded": final_state.get("grounded", True),
         "critique_reason": final_state.get("critique_reason", ""),
     }
+
+    logger.info("━━━ Pipeline DONE ━━━", extra={
+        "grounded": result["grounded"], "attempts": result["attempts"]
+    })
+
+    return result

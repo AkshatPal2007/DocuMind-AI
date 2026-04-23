@@ -3,8 +3,6 @@
 /api/chat        — Direct RAG (Phase 5, fast, single LLM call)
 /api/agent-chat  — Multi-Agent pipeline (Phase 6, LangGraph orchestrated)
 /api/models      — Available models for the frontend selector
-
-Both support ?stream=false for JSON responses.
 """
 
 from fastapi import APIRouter, Query
@@ -14,8 +12,10 @@ from backend.schemas.response import ChatResponse
 from backend.services.llm_service import generate_answer
 from backend.orchestrator.langgraph_flow import run_pipeline
 from backend.services.llm_provider import get_available_models
+from backend.core.logger import get_logger
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 # ── Models list endpoint ─────────────────────────────────────────────────
@@ -23,16 +23,17 @@ router = APIRouter()
 @router.get("/models")
 async def list_models():
     """Return available models (those with valid API keys)."""
-    return {"models": get_available_models()}
+    models = get_available_models()
+    logger.info("Models listed", extra={"count": len(models)})
+    return {"models": models}
 
 
 # ── Direct RAG endpoint (Phase 5) ───────────────────────────────────────
 
 @router.post("/chat")
 async def chat(req: ChatRequest, stream: bool = Query(default=False)):
-    """
-    Ask a question — direct RAG (fast, single LLM call).
-    """
+    """Direct RAG — fast, single LLM call."""
+    logger.info("Direct chat", extra={"question": req.question[:80], "model": req.model})
     answer, sources = generate_answer(req.question, k=req.k, model_id=req.model)
     return ChatResponse(
         question=req.question,
@@ -45,12 +46,19 @@ async def chat(req: ChatRequest, stream: bool = Query(default=False)):
 
 @router.post("/agent-chat")
 async def agent_chat(req: ChatRequest):
-    """
-    Ask a question — multi-agent pipeline (LangGraph orchestrated).
-    Retrieval → Reasoning → Critique → Summary with retry loop.
-    Always returns JSON.
-    """
-    result = run_pipeline(question=req.question, k=req.k, model_id=req.model, file_name=req.file_name)
+    """Multi-agent pipeline — LangGraph orchestrated."""
+    logger.info("Agent chat", extra={
+        "question": req.question[:80], "model": req.model, "file": req.file_name
+    })
+
+    result = run_pipeline(
+        question=req.question, k=req.k,
+        model_id=req.model, file_name=req.file_name,
+    )
+
+    logger.info("Agent chat complete", extra={
+        "grounded": result["grounded"], "attempts": result["attempts"]
+    })
 
     return {
         "question": result["question"],
