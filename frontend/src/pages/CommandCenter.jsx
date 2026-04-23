@@ -15,6 +15,7 @@ export default function CommandCenter() {
   const [telemetry, setTelemetry] = useState({});
   const [metadata, setMetadata] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedModelName, setSelectedModelName] = useState(null);
   const feedRef = useRef(null);
 
   // Auto-scroll to bottom on new messages
@@ -114,7 +115,13 @@ export default function CommandCenter() {
               <p className="text-[13px] font-medium tracking-[0.02em] text-text-secondary mt-1">Session ID: #REQ-{sessionCounter}-X</p>
             </div>
             <div className="flex gap-2 items-center">
-              <ModelSelector selectedModel={selectedModel} onModelChange={setSelectedModel} />
+              <ModelSelector 
+                selectedModel={selectedModel} 
+                onModelChange={(id, name) => {
+                  setSelectedModel(id);
+                  setSelectedModelName(name);
+                }} 
+              />
               <span className="text-[11px] font-bold tracking-[0.05em] border border-border bg-surface-raised text-text-secondary px-2 py-1 rounded flex items-center gap-1 cursor-pointer hover:border-accent transition-colors">
                 <span className="material-symbols-outlined text-[14px]">history</span> History
               </span>
@@ -182,7 +189,7 @@ export default function CommandCenter() {
         </div>
 
         {/* Right: Agent Telemetry */}
-        <AgentTelemetry telemetry={telemetry} metadata={metadata} />
+        <AgentTelemetry telemetry={telemetry} metadata={metadata} modelName={selectedModelName} />
       </div>
     </main>
   );

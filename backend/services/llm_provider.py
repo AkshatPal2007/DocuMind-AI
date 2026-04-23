@@ -83,6 +83,25 @@ def get_available_models() -> list:
     return available
 
 
+def get_fast_model() -> str:
+    """Return the fastest available model ID, ideal for quick JSON tasks like critique."""
+    available = [m["id"] for m in get_available_models()]
+    
+    # 1. Prefer Groq 8B for absolute fastest JSON schema generation
+    for m in available:
+        if "groq" in m and "8b" in m: return m
+        
+    # 2. Fallback to Gemini Flash
+    for m in available:
+        if "gemini" in m and "flash" in m: return m
+        
+    # 3. Fallback to NVIDIA 8B
+    for m in available:
+        if "nvidia" in m and "8b" in m: return m
+        
+    return DEFAULT_MODEL_ID
+
+
 def _resolve_model(model_id: str) -> dict:
     """Resolve a model ID string to its config."""
     for m in AVAILABLE_MODELS:

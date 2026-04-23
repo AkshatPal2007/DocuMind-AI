@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    container_name: documind-backend
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      # Optional overrides from .env
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=200
+    restart: unless-stopped
+    # Exposing the port is optional since frontend routes to it internally,
+    # but useful if you want to hit the API directly during dev.
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+    container_name: documind-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  documind_data:

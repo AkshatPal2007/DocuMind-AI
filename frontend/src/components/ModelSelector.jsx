@@ -23,7 +23,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
       setModels(m);
       // Auto-select first available model if none selected
       if (!selectedModel && m.length > 0) {
-        onModelChange(m[0].id);
+        onModelChange(m[0].id, m[0].name);
       }
       setLoading(false);
     });
@@ -82,7 +82,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                 {providerModels.map(m => (
                   <button
                     key={m.id}
-                    onClick={() => { onModelChange(m.id); setOpen(false); }}
+                    onClick={() => { onModelChange(m.id, m.name); setOpen(false); }}
                     className={`w-full text-left px-3 py-2 text-[13px] flex items-center justify-between hover:bg-base transition-colors cursor-pointer ${
                       m.id === selectedModel ? 'text-accent bg-accent/5' : 'text-text-primary'
                     }`}

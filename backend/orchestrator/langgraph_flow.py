@@ -26,6 +26,7 @@ from backend.agents.reasoning_agent import ReasoningAgent
 from backend.agents.critique_agent import CritiqueAgent
 from backend.agents.summary_agent import SummaryAgent
 from backend.schemas.response import SourceChunk
+from backend.services.llm_provider import get_fast_model
 from backend.core.config import settings
 from backend.core.logger import get_logger
 
@@ -125,12 +126,13 @@ def rewrite_query_on_failure(original: str, critique_reason: str, attempt: int) 
 
 def critique_node(state: PipelineState) -> dict:
     """Run the Critique Agent."""
-    logger.info("⮞ Critique Agent", extra={"attempt": state.get("attempt", 0) + 1})
+    fast_model = get_fast_model()
+    logger.info("⮞ Critique Agent", extra={"attempt": state.get("attempt", 0) + 1, "model": fast_model})
     result = _critique_agent.run(
         question=state["question"],
         context=state["context"],
         answer=state["raw_answer"],
-        model_id=state.get("model_id"),
+        model_id=fast_model,
     )
     
     attempt = state.get("attempt", 0) + 1

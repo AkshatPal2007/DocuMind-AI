@@ -13,7 +13,7 @@ function StepStatus({ status }) {
   return <span className="text-text-muted text-[12px] font-medium">Waiting</span>;
 }
 
-export default function AgentTelemetry({ telemetry, metadata }) {
+export default function AgentTelemetry({ telemetry, metadata, modelName }) {
   return (
     <div className="w-80 border-l border-border bg-surface flex flex-col h-full shrink-0">
       {/* Header */}
@@ -78,7 +78,7 @@ export default function AgentTelemetry({ telemetry, metadata }) {
           <div>Grounded: <span className={metadata?.grounded ? 'text-green' : metadata?.grounded === false ? 'text-red' : 'text-text-primary'}>
             {metadata?.grounded === true ? 'Yes ✓' : metadata?.grounded === false ? 'No ✗' : '--'}
           </span></div>
-          <div className="col-span-2">Model: <span className="text-text-primary">Gemini 2.5 Flash</span></div>
+          <div className="col-span-2">Model: <span className="text-text-primary">{modelName || '--'}</span></div>
         </div>
       </div>
     </div>
