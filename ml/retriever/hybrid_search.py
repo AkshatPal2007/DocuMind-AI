@@ -2,11 +2,24 @@ from backend.services.vector_db_service import vector_db
 from langchain_core.documents import Document
 from typing import List, Tuple
 
-def semantic_search(query: str, k: int = 4) -> List[Document]:
-    return vector_db.similarity_search(query, k=k)
+def semantic_search(query: str, k: int = 4, user_id: str = None) -> List[Document]:
+    filter_dict = {"user_id": {"$eq": user_id}} if user_id else None
+    return vector_db.similarity_search(query, k=k, filter=filter_dict)
 
-def search_with_scores(query: str, k: int = 6, file_name: str = None) -> List[Tuple[Document, float]]:
-    filter_dict = {"file_name": file_name} if file_name else None
+def search_with_scores(query: str, k: int = 6, file_name: str = None, user_id: str = None) -> List[Tuple[Document, float]]:
+    conditions = []
+    if file_name:
+        conditions.append({"file_name": {"$eq": file_name}})
+    if user_id:
+        conditions.append({"user_id": {"$eq": user_id}})
+
+    if len(conditions) == 0:
+        filter_dict = None
+    elif len(conditions) == 1:
+        filter_dict = conditions[0]
+    else:
+        filter_dict = {"$and": conditions}
+
     return vector_db.similarity_search_with_score(query, k=k, filter=filter_dict)
 
 def format_context(docs_with_scores: List[Tuple[Document, float]]) -> str:

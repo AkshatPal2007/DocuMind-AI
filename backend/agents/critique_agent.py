@@ -16,6 +16,7 @@ You will receive:
 Your job is to determine:
 1. Is the ANSWER factually supported by the CONTEXT?
 2. Does the ANSWER avoid making claims not present in the CONTEXT?
+3. IMPORTANT: If the ANSWER says it couldn't find information, but the CONTEXT actually DOES contain relevant information about the question (definitions, mentions, glossary entries, descriptions), mark it as NOT grounded with reason "false_refusal". The answer should have used the available context instead of refusing.
 
 Respond with EXACTLY this JSON format (no extra text):
 {

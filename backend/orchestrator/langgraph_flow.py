@@ -44,6 +44,7 @@ class PipelineState(TypedDict):
     k: int
     model_id: Optional[str]
     file_name: Optional[str]
+    user_id: Optional[str]
 
     # Retrieval outputs
     docs_with_scores: List[Tuple[Document, float]]
@@ -80,9 +81,10 @@ def retrieve_node(state: PipelineState) -> dict:
     query = state.get("refined_query") or state["question"]
     k = state.get("k", 4)
     file_name = state.get("file_name")
+    user_id = state.get("user_id")
 
-    logger.info("⮞ Retrieval Agent", extra={"query": query[:60], "k": k, "file": file_name})
-    result = _retrieval_agent.run(query, k=k, file_name=file_name)
+    logger.info("⮞ Retrieval Agent", extra={"query": query[:60], "k": k, "file": file_name, "user_id": user_id})
+    result = _retrieval_agent.run(query, k=k, file_name=file_name, user_id=user_id)
 
     # Build source metadata list
     sources = [
@@ -201,7 +203,7 @@ pipeline = build_pipeline()
 
 # ── Public API ───────────────────────────────────────────────────────────
 
-def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str = None) -> dict:
+def run_pipeline(question: str, k: int = 6, model_id: str = None, file_name: str = None, user_id: str = None) -> dict:
     """
     Run the full multi-agent pipeline.
 
@@ -214,7 +216,7 @@ def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str
         dict with keys: question, answer, sources, attempts, grounded, critique_reason
     """
     logger.info("━━━ Pipeline START ━━━", extra={
-        "question": question[:80], "model": model_id, "file": file_name
+        "question": question[:80], "model": model_id, "file": file_name, "user_id": user_id
     })
 
     initial_state = {
@@ -222,6 +224,7 @@ def run_pipeline(question: str, k: int = 4, model_id: str = None, file_name: str
         "k": k,
         "model_id": model_id,
         "file_name": file_name,
+        "user_id": user_id,
         "docs_with_scores": [],
         "context": "",
         "sources": [],

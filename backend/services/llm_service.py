@@ -27,9 +27,9 @@ The answer may be a direct definition from a table or list.
 """
 
 
-def _retrieve(question: str, k: int = 6) -> Tuple[str, List[SourceChunk]]:
+def _retrieve(question: str, k: int = 6, user_id: str = None) -> Tuple[str, List[SourceChunk]]:
     """Retrieve top-k chunks and return (formatted_context, source_list)."""
-    docs_with_scores = search_with_scores(question, k=k)
+    docs_with_scores = search_with_scores(question, k=k, user_id=user_id)
 
     context = format_context(docs_with_scores)
 
@@ -48,11 +48,11 @@ def _retrieve(question: str, k: int = 6) -> Tuple[str, List[SourceChunk]]:
 
 # ── Non-streaming (JSON) ────────────────────────────────────────────────
 
-def generate_answer(question: str, k: int = 6, model_id: str = None) -> Tuple[str, List[SourceChunk]]:
+def generate_answer(question: str, k: int = 6, model_id: str = None, user_id: str = None) -> Tuple[str, List[SourceChunk]]:
     """
     Returns (answer_text, sources) in one shot.
     """
-    context, sources = _retrieve(question, k=k)
+    context, sources = _retrieve(question, k=k, user_id=user_id)
 
     user_prompt = f"Context:\n{context}\n\nQuestion: {question}"
     answer = generate(

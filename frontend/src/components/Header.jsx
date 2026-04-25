@@ -1,4 +1,8 @@
+import { useAuth } from '../contexts/AuthContext';
+
 export default function Header() {
+  const { user, signOut } = useAuth();
+
   return (
     <header className="flex justify-between items-center h-14 px-4 w-full bg-base border-b border-border z-50">
       <div className="flex items-center gap-4">
@@ -27,14 +31,18 @@ export default function Header() {
           System: Operational
         </div>
         <button className="text-text-muted hover:bg-surface-raised hover:text-accent transition-colors p-1.5">
-          <span className="material-symbols-outlined text-[20px]">terminal</span>
-        </button>
-        <button className="text-text-muted hover:bg-surface-raised hover:text-accent transition-colors p-1.5">
           <span className="material-symbols-outlined text-[20px]">notifications</span>
         </button>
-        <button className="text-text-muted hover:bg-surface-raised hover:text-accent transition-colors p-1.5">
-          <span className="material-symbols-outlined text-[20px]">account_circle</span>
-        </button>
+        <div className="flex items-center gap-2 ml-2 border-l border-border pl-4">
+          <span className="text-text-secondary text-[12px] hidden sm:block">{user?.email}</span>
+          <button 
+            onClick={() => signOut()}
+            className="text-text-muted hover:bg-surface-raised hover:text-red transition-colors p-1.5 flex items-center gap-1"
+            title="Sign out"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+          </button>
+        </div>
       </div>
     </header>
   );

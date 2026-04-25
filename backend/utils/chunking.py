@@ -68,8 +68,8 @@ def detect_chunk_type(chunk_text: str, metadata: dict) -> str:
     return "content"
 
 def chunk_documents(docs: List[Document], 
-                    chunk_size: int = 1000, 
-                    chunk_overlap: int = 200) -> List[Document]:
+                    chunk_size: int = 500, 
+                    chunk_overlap: int = 150) -> List[Document]:
     
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,

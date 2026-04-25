@@ -8,7 +8,7 @@ from backend.core.logger import get_logger
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api.routes import upload, chat, query
+from backend.api.routes import upload, chat, query, files
 
 logger = get_logger(__name__)
 
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api")
 app.include_router(chat.router,   prefix="/api")
 app.include_router(query.router,  prefix="/api")
+app.include_router(files.router,  prefix="/api")
 
 
 @app.on_event("startup")

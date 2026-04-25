@@ -9,7 +9,7 @@ SUMMARY_PROMPT = """You are a document assistant summarizer.
 
 You will receive a raw answer that was generated from document context.
 Your job is to:
-1. Make it concise and well-structured (use bullet points if helpful).
+1. Make it well-structured (use bullet points if helpful).
 2. Keep all [Source N] citations exactly as they appear.
 3. Do NOT add information that was not in the original answer.
 4. If the answer says it couldn't find information, keep that message.

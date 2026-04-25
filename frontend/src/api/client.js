@@ -1,10 +1,22 @@
+import { supabase } from '../lib/supabase';
+
 const API_BASE = '/api';
+
+async function getAuthHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+}
 
 export const api = {
   async uploadFile(file) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: { ...headers },
+      body: formData
+    });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
       throw new Error(err.detail || 'Upload failed');
@@ -16,9 +28,10 @@ export const api = {
     const body = { question, k };
     if (model) body.model = model;
     if (fileName) body.file_name = fileName;
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_BASE}/agent-chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -31,9 +44,10 @@ export const api = {
   async directChat(question, k = 6, model = null) {
     const body = { question, k };
     if (model) body.model = model;
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_BASE}/chat?stream=false`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -44,10 +58,23 @@ export const api = {
   },
 
   async getModels() {
-    const res = await fetch(`${API_BASE}/models`);
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/models`, {
+      headers: { ...headers }
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return data.models || [];
+  },
+
+  async getFiles() {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/files`, {
+      headers: { ...headers }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.files || [];
   },
 };
 

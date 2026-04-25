@@ -1,7 +1,7 @@
 # backend/api/routes/upload.py
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from backend.services.ingestion import ingest_document
-from backend.api.deps import get_upload_dir
+from backend.api.deps import get_upload_dir, get_current_user
 from backend.core.logger import get_logger
 import shutil, os
 
@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 async def upload_file(
     file: UploadFile = File(...),
     upload_dir: str = Depends(get_upload_dir),
+    user_id: str = Depends(get_current_user),
 ):
     allowed = [".pdf", ".txt", ".docx", ".csv"]
     ext = os.path.splitext(file.filename)[1].lower()
@@ -26,11 +27,11 @@ async def upload_file(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    logger.info("File uploaded", extra={"file": file.filename, "size": file.size, "path": file_path})
+    logger.info("File uploaded", extra={"file": file.filename, "size": file.size, "path": file_path, "user_id": user_id})
 
     # Trigger ingestion
     try:
-        result = ingest_document(file_path)
+        result = ingest_document(file_path, user_id)
         logger.info("Ingestion complete", extra={
             "file": file.filename, "chunks": result["chunks"], "total": result["total_indexed"]
         })

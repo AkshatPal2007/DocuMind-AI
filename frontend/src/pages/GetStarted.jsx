@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, workspace } from '../api/client';
+import { api } from '../api/client';
 
 export default function GetStarted() {
   const [status, setStatus] = useState(null); // { msg, type: 'loading'|'success'|'error' }
@@ -22,13 +22,6 @@ export default function GetStarted() {
 
     try {
       const res = await api.uploadFile(file);
-      workspace.addDoc({
-        name: file.name,
-        size: file.size,
-        ext,
-        chunks: res.chunks,
-        uploadedAt: new Date().toISOString(),
-      });
       setResult({ name: file.name, chunks: res.chunks });
       setStatus({ msg: `✓ ${file.name} — ${res.chunks} chunks indexed`, type: 'success' });
     } catch (err) {
