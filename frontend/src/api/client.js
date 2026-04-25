@@ -24,10 +24,11 @@ export const api = {
     return res.json();
   },
 
-  async agentChat(question, k = 6, model = null, fileName = null) {
+  async agentChat(question, k = 6, model = null, fileName = null, temperature = null) {
     const body = { question, k };
     if (model) body.model = model;
     if (fileName) body.file_name = fileName;
+    if (typeof temperature === 'number') body.temperature = temperature;
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_BASE}/agent-chat`, {
       method: 'POST',
@@ -41,9 +42,10 @@ export const api = {
     return res.json();
   },
 
-  async directChat(question, k = 6, model = null) {
+  async directChat(question, k = 6, model = null, temperature = null) {
     const body = { question, k };
     if (model) body.model = model;
+    if (typeof temperature === 'number') body.temperature = temperature;
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_BASE}/chat?stream=false`, {
       method: 'POST',

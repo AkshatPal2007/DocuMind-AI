@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import GetStarted from './pages/GetStarted';
 import CommandCenter from './pages/CommandCenter';
+import Activity from './pages/Activity';
+import Settings from './pages/Settings';
 import Auth from './pages/Auth';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -26,6 +28,8 @@ export default function App() {
           }>
             <Route path="/" element={<GetStarted />} />
             <Route path="/chat" element={<CommandCenter />} />
+            <Route path="/activity" element={<Activity />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

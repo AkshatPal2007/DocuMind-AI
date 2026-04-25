@@ -34,8 +34,14 @@ async def list_models():
 @router.post("/chat")
 async def chat(req: ChatRequest, stream: bool = Query(default=False), user_id: str = Depends(get_current_user)):
     """Direct RAG — fast, single LLM call."""
-    logger.info("Direct chat", extra={"question": req.question[:80], "model": req.model})
-    answer, sources = generate_answer(req.question, k=req.k, model_id=req.model, user_id=user_id)
+    logger.info("Direct chat", extra={"question": req.question[:80], "model": req.model, "temperature": req.temperature})
+    answer, sources = generate_answer(
+        req.question,
+        k=req.k,
+        model_id=req.model,
+        user_id=user_id,
+        temperature=req.temperature,
+    )
     return ChatResponse(
         question=req.question,
         answer=answer,
@@ -49,13 +55,13 @@ async def chat(req: ChatRequest, stream: bool = Query(default=False), user_id: s
 async def agent_chat(req: ChatRequest, user_id: str = Depends(get_current_user)):
     """Multi-agent pipeline — LangGraph orchestrated."""
     logger.info("Agent chat", extra={
-        "question": req.question[:80], "model": req.model, "file": req.file_name
+        "question": req.question[:80], "model": req.model, "file": req.file_name, "temperature": req.temperature
     })
 
     result = run_pipeline(
         question=req.question, k=req.k,
         model_id=req.model, file_name=req.file_name,
-        user_id=user_id
+        user_id=user_id, temperature=req.temperature,
     )
 
     logger.info("Agent chat complete", extra={

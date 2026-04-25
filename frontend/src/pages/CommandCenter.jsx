@@ -4,6 +4,8 @@ import DocumentList from '../components/chat/DocumentList';
 import AgentTelemetry from '../components/chat/AgentTelemetry';
 import { UserMessage, AIMessage, LoadingMessage } from '../components/chat/ChatMessages';
 import ModelSelector from '../components/ModelSelector';
+import { addActivityEvent } from '../lib/activityLog';
+import { getSensitivityProfile, loadAppSettings } from '../lib/userPreferences';
 
 let sessionCounter = Math.floor(Math.random() * 9000) + 1000;
 
@@ -16,6 +18,7 @@ export default function CommandCenter() {
   const [metadata, setMetadata] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [selectedModelName, setSelectedModelName] = useState(null);
+  const [appSettings, setAppSettings] = useState(() => loadAppSettings());
   const feedRef = useRef(null);
 
   // Auto-scroll to bottom on new messages
@@ -25,9 +28,23 @@ export default function CommandCenter() {
     }
   }, [messages, loading]);
 
+  useEffect(() => {
+    const syncSettings = () => setAppSettings(loadAppSettings());
+    window.addEventListener('focus', syncSettings);
+    window.addEventListener('storage', syncSettings);
+    return () => {
+      window.removeEventListener('focus', syncSettings);
+      window.removeEventListener('storage', syncSettings);
+    };
+  }, []);
+
   const sendQuery = useCallback(async () => {
     const question = input.trim();
     if (!question || loading) return;
+
+    const retrievalK = appSettings.retrievalK;
+    const llmSensitivity = appSettings.llmSensitivity;
+    const sensitivityProfile = getSensitivityProfile(llmSensitivity).label;
 
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: question }]);
@@ -35,7 +52,7 @@ export default function CommandCenter() {
 
     // Simulate telemetry steps
     setTelemetry({
-      retrieve: { status: 'running', logs: ['Executing semantic search...'] },
+      retrieve: { status: 'running', logs: [`Executing top-${retrievalK} semantic search...`] },
     });
 
     try {
@@ -43,8 +60,8 @@ export default function CommandCenter() {
       setTimeout(() => {
         setTelemetry(prev => ({
           ...prev,
-          retrieve: { status: 'done', time: '~50ms', logs: ['Semantic search complete', 'Found relevant chunks'] },
-          reason: { status: 'running', logs: ['Synthesizing answer from context...'] },
+          retrieve: { status: 'done', time: '~50ms', logs: ['Semantic search complete', `Top-${retrievalK} chunks selected`] },
+          reason: { status: 'running', logs: [`Synthesizing answer (${sensitivityProfile.toLowerCase()} mode)...`] },
         }));
       }, 300);
 
@@ -57,7 +74,7 @@ export default function CommandCenter() {
         }));
       }, 800);
 
-      const result = await api.agentChat(question, 6, selectedModel, selectedDoc);
+      const result = await api.agentChat(question, retrievalK, selectedModel, selectedDoc, llmSensitivity);
 
       // Step 3: All done
       setTelemetry({
@@ -80,6 +97,17 @@ export default function CommandCenter() {
         sources: result.sources,
       }]);
 
+      addActivityEvent({
+        type: 'query',
+        status: 'success',
+        question,
+        model: selectedModelName || selectedModel || 'Automatic',
+        document: selectedDoc || 'All documents',
+        sensitivity: llmSensitivity,
+        retrievalK,
+        attempts: result.metadata?.attempts ?? 1,
+      });
+
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'ai',
@@ -87,11 +115,21 @@ export default function CommandCenter() {
         metadata: { attempts: 1, grounded: false },
         sources: [],
       }]);
+      addActivityEvent({
+        type: 'query',
+        status: 'error',
+        question,
+        model: selectedModelName || selectedModel || 'Automatic',
+        document: selectedDoc || 'All documents',
+        sensitivity: llmSensitivity,
+        retrievalK,
+        error: err.message,
+      });
       setTelemetry({});
     } finally {
       setLoading(false);
     }
-  }, [input, loading, selectedModel]);
+  }, [appSettings, input, loading, selectedDoc, selectedModel, selectedModelName]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -122,6 +160,14 @@ export default function CommandCenter() {
                   setSelectedModelName(name);
                 }} 
               />
+              <span className="text-[11px] font-bold tracking-[0.05em] border border-border bg-surface-raised text-text-secondary px-2 py-1 rounded flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">tune</span>
+                {getSensitivityProfile(appSettings.llmSensitivity).label}
+              </span>
+              <span className="text-[11px] font-bold tracking-[0.05em] border border-border bg-surface-raised text-text-secondary px-2 py-1 rounded flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">layers</span>
+                Top-{appSettings.retrievalK}
+              </span>
               <span className="text-[11px] font-bold tracking-[0.05em] border border-border bg-surface-raised text-text-secondary px-2 py-1 rounded flex items-center gap-1 cursor-pointer hover:border-accent transition-colors">
                 <span className="material-symbols-outlined text-[14px]">history</span> History
               </span>

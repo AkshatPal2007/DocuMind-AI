@@ -158,6 +158,7 @@ def generate(
     user_prompt: str,
     model_id: str = None,
     json_mode: bool = False,
+    temperature: float = None,
 ) -> str:
     """
     Generate text using the specified model.
@@ -169,23 +170,25 @@ def generate(
     provider = config["provider"]
     model_name = config["model"]
 
-    logger.info("LLM generate", extra={"provider": provider, "model": model_name})
+    logger.info("LLM generate", extra={"provider": provider, "model": model_name, "temperature": temperature})
 
     if provider == "gemini":
-        return _generate_gemini(system_prompt, user_prompt, model_name, json_mode)
+        return _generate_gemini(system_prompt, user_prompt, model_name, json_mode, temperature)
     elif provider == "nvidia":
-        return _generate_openai_compat(_get_nvidia_client(), system_prompt, user_prompt, model_name, json_mode)
+        return _generate_openai_compat(_get_nvidia_client(), system_prompt, user_prompt, model_name, json_mode, temperature)
     elif provider == "groq":
-        return _generate_openai_compat(_get_groq_client(), system_prompt, user_prompt, model_name, json_mode)
+        return _generate_openai_compat(_get_groq_client(), system_prompt, user_prompt, model_name, json_mode, temperature)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
 
-def _generate_gemini(system_prompt, user_prompt, model_name, json_mode):
+def _generate_gemini(system_prompt, user_prompt, model_name, json_mode, temperature):
     from google import genai
     client = _get_gemini_client()
 
     config_kwargs = {"system_instruction": system_prompt}
+    if temperature is not None:
+        config_kwargs["temperature"] = temperature
     if json_mode:
         config_kwargs["response_mime_type"] = "application/json"
 
@@ -197,7 +200,7 @@ def _generate_gemini(system_prompt, user_prompt, model_name, json_mode):
     return response.text
 
 
-def _generate_openai_compat(client, system_prompt, user_prompt, model_name, json_mode):
+def _generate_openai_compat(client, system_prompt, user_prompt, model_name, json_mode, temperature):
     kwargs = {
         "model": model_name,
         "messages": [
@@ -205,6 +208,8 @@ def _generate_openai_compat(client, system_prompt, user_prompt, model_name, json
             {"role": "user", "content": user_prompt},
         ],
     }
+    if temperature is not None:
+        kwargs["temperature"] = temperature
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
 

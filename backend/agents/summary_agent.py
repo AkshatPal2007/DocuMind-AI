@@ -20,9 +20,10 @@ Return ONLY the polished answer — no preamble, no "Here is the summary", just 
 class SummaryAgent:
     """Condenses a raw answer and ensures citations are preserved."""
 
-    def run(self, raw_answer: str, model_id: str = None) -> str:
+    def run(self, raw_answer: str, model_id: str = None, temperature: float = None) -> str:
         return generate(
             system_prompt=SUMMARY_PROMPT,
             user_prompt=raw_answer,
             model_id=model_id,
+            temperature=temperature,
         )

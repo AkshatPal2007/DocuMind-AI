@@ -20,9 +20,10 @@ Rules:
 class ReasoningAgent:
     """Sends context + question to the LLM and returns the raw answer."""
 
-    def run(self, question: str, context: str, model_id: str = None) -> str:
+    def run(self, question: str, context: str, model_id: str = None, temperature: float = None) -> str:
         return generate(
             system_prompt=REASONING_PROMPT,
             user_prompt=f"Context:\n{context}\n\nQuestion: {question}",
             model_id=model_id,
+            temperature=temperature,
         )

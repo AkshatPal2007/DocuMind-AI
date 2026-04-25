@@ -43,6 +43,7 @@ class PipelineState(TypedDict):
     question: str
     k: int
     model_id: Optional[str]
+    temperature: Optional[float]
     file_name: Optional[str]
     user_id: Optional[str]
 
@@ -111,6 +112,7 @@ def reasoning_node(state: PipelineState) -> dict:
         question=state["question"],
         context=state["context"],
         model_id=state.get("model_id"),
+        temperature=state.get("temperature"),
     )
     return {"raw_answer": raw_answer}
 
@@ -158,6 +160,7 @@ def summary_node(state: PipelineState) -> dict:
     final_answer = _summary_agent.run(
         state["raw_answer"],
         model_id=state.get("model_id"),
+        temperature=state.get("temperature"),
     )
     return {"final_answer": final_answer}
 
@@ -203,7 +206,14 @@ pipeline = build_pipeline()
 
 # ── Public API ───────────────────────────────────────────────────────────
 
-def run_pipeline(question: str, k: int = 6, model_id: str = None, file_name: str = None, user_id: str = None) -> dict:
+def run_pipeline(
+    question: str,
+    k: int = 6,
+    model_id: str = None,
+    file_name: str = None,
+    user_id: str = None,
+    temperature: float = None,
+) -> dict:
     """
     Run the full multi-agent pipeline.
 
@@ -216,13 +226,14 @@ def run_pipeline(question: str, k: int = 6, model_id: str = None, file_name: str
         dict with keys: question, answer, sources, attempts, grounded, critique_reason
     """
     logger.info("━━━ Pipeline START ━━━", extra={
-        "question": question[:80], "model": model_id, "file": file_name, "user_id": user_id
+        "question": question[:80], "model": model_id, "file": file_name, "user_id": user_id, "temperature": temperature
     })
 
     initial_state = {
         "question": question,
         "k": k,
         "model_id": model_id,
+        "temperature": temperature,
         "file_name": file_name,
         "user_id": user_id,
         "docs_with_scores": [],

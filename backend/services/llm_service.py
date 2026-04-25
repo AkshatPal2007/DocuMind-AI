@@ -48,7 +48,13 @@ def _retrieve(question: str, k: int = 6, user_id: str = None) -> Tuple[str, List
 
 # ── Non-streaming (JSON) ────────────────────────────────────────────────
 
-def generate_answer(question: str, k: int = 6, model_id: str = None, user_id: str = None) -> Tuple[str, List[SourceChunk]]:
+def generate_answer(
+    question: str,
+    k: int = 6,
+    model_id: str = None,
+    user_id: str = None,
+    temperature: float = None,
+) -> Tuple[str, List[SourceChunk]]:
     """
     Returns (answer_text, sources) in one shot.
     """
@@ -59,6 +65,7 @@ def generate_answer(question: str, k: int = 6, model_id: str = None, user_id: st
         system_prompt=SYSTEM_PROMPT,
         user_prompt=user_prompt,
         model_id=model_id,
+        temperature=temperature,
     )
 
     return answer, sources

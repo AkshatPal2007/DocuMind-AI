@@ -1,14 +1,14 @@
 <div align="center">
 
-# 🧠 DocuMind AI
+# DocuMind AI
 
 **An intelligent, multi-tenant document interrogation platform powered by a LangGraph multi-agent pipeline.**
 
-Upload your documents. Ask any question. Get cited, grounded answers from a reasoning AI system — not hallucinations.
+Upload documents, ask questions in natural language, and receive grounded answers with citations.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://react.dev)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20Postgres-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6B6B?style=flat-square)](https://langchain-ai.github.io/langgraph/)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-orange?style=flat-square)](https://trychroma.com)
@@ -18,7 +18,7 @@ Upload your documents. Ask any question. Get cited, grounded answers from a reas
 
 ---
 
-## ✨ What is DocuMind?
+## What is DocuMind?
 
 DocuMind is a **production-ready, AI-powered document Q&A platform** that lets users upload documents (PDF, TXT, CSV) and interrogate them using natural language. Unlike simple RAG chatbots, DocuMind runs a full **multi-agent reasoning pipeline** that retrieves relevant content, generates a grounded answer, self-critiques it, and refines the output — all in real time.
 
@@ -26,7 +26,7 @@ Every user gets their own private workspace. Documents uploaded by User A are ne
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 User Query
@@ -48,27 +48,30 @@ User Query
 - **Multi-tenant isolation** — every ChromaDB query and Postgres record is scoped to the authenticated user's ID.
 - **Provider-agnostic LLM routing** — supports Gemini, NVIDIA NIM, and Groq; switch models per query from the UI.
 - **Self-healing retrieval** — if the Critique Agent flags an answer as ungrounded, the pipeline rewrites the query and retries automatically.
+- **Operator controls** — response sensitivity and retrieval depth can be adjusted from the Settings panel.
 
 ---
 
-## 🚀 Features
+## Features
 
 | Feature | Details |
 |---|---|
-| 📄 **Document Upload** | PDF, TXT, CSV support with intelligent chunking and smart chunk-type detection (glossary, table, reference, content) |
-| 🤖 **Multi-Agent Pipeline** | LangGraph stateful graph with 4 specialized agents: Retrieval → Reasoning → Critique → Summary |
-| 🔍 **Semantic Search** | Sentence-Transformers embeddings (`all-MiniLM-L6-v2`) stored in ChromaDB with user-scoped metadata filters |
-| 🔐 **Authentication** | Supabase Auth (email/password) with JWT validation; full per-user data isolation |
-| 🧑‍🤝‍🧑 **Multi-Tenant** | Users only see and query their own documents — enforced at both the API and database (Postgres RLS) layers |
-| 🏷️ **Source Citations** | Every answer includes `[Source N]` citations referencing the exact document, page, and relevance score |
-| 🔄 **Self-Critique & Retry** | Critique Agent detects hallucinations and false refusals; rewrites the retrieval query and retries up to 2 times |
-| 🧩 **Multi-Provider LLM** | Switch between Gemini 2.5 Flash, Llama 3.3 70B (NVIDIA / Groq), DeepSeek V3 from the UI |
-| 📊 **Agent Telemetry** | Live sidebar shows each agent's status (Waiting → Processing → Complete) in real time |
-| 🐳 **Docker Ready** | Single `docker-compose up` brings up the full stack (FastAPI backend + React frontend via Nginx) |
+| **Document Upload** | PDF, TXT, CSV support with intelligent chunking and smart chunk-type detection (glossary, table, reference, content) |
+| **Multi-Agent Pipeline** | LangGraph stateful graph with 4 specialized agents: Retrieval → Reasoning → Critique → Summary |
+| **Semantic Search** | Sentence-Transformers embeddings (`all-MiniLM-L6-v2`) stored in ChromaDB with user-scoped metadata filters |
+| **Authentication** | Supabase Auth (email/password) with JWT validation; full per-user data isolation |
+| **Multi-Tenant** | Users only see and query their own documents — enforced at both the API and database (Postgres RLS) layers |
+| **Source Citations** | Every answer includes `[Source N]` citations referencing the exact document, page, and relevance score |
+| **Self-Critique & Retry** | Critique Agent detects hallucinations and false refusals; rewrites the retrieval query and retries up to 2 times |
+| **Multi-Provider LLM** | Switch between Gemini 2.5 Flash, Llama 3.3 70B (NVIDIA / Groq), DeepSeek V3 from the UI |
+| **Agent Telemetry** | Live sidebar shows each agent's status (Waiting → Processing → Complete) in real time |
+| **Runtime Controls** | Settings panel supports configurable LLM sensitivity (temperature) and retrieval depth (top-k) |
+| **Activity Log** | Activity panel shows recent query outcomes, model selection, scope, and execution settings |
+| **Docker Ready** | Single `docker-compose up` brings up the full stack (FastAPI backend + React frontend via Nginx) |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **[FastAPI](https://fastapi.tiangolo.com/)** — async REST API
@@ -79,7 +82,7 @@ User Query
 - **[python-docx](https://python-docx.readthedocs.io/) / [pypdf](https://pypdf.readthedocs.io/)** — document parsing
 
 ### Frontend
-- **[React 18](https://react.dev/)** — component-based UI
+- **[React 19](https://react.dev/)** — component-based UI
 - **[Vite](https://vitejs.dev/)** — fast dev server and bundler
 - **[Supabase JS](https://supabase.com/docs/reference/javascript)** — client-side auth session management
 - **[Lucide React](https://lucide.dev/)** — icon library
@@ -97,7 +100,7 @@ User Query
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 DocuMind/
@@ -133,16 +136,21 @@ DocuMind/
 ├── frontend/
 │   ├── src/
 │   │   ├── contexts/AuthContext.jsx  # Global auth state
-│   │   ├── lib/supabase.js           # Supabase client
+│   │   ├── lib/
+│   │   │   ├── supabase.js           # Supabase client
+│   │   │   ├── userPreferences.js    # Settings persistence
+│   │   │   └── activityLog.js        # Local activity history
 │   │   ├── pages/
 │   │   │   ├── Auth.jsx              # Login / Register page
-│   │   │   └── CommandCenter.jsx     # Main app interface
+│   │   │   ├── CommandCenter.jsx     # Main app interface
+│   │   │   ├── Settings.jsx          # Runtime controls
+│   │   │   └── Activity.jsx          # Query activity history
 │   │   ├── components/
 │   │   │   ├── chat/AgentTelemetry.jsx  # Live agent status panel
 │   │   │   ├── chat/ChatMessages.jsx    # Chat message renderer
 │   │   │   └── chat/DocumentList.jsx    # Sidebar document list
 │   │   └── api/client.js              # Authenticated API client
-│   ├── Dockerfile                     # Frontend Nginx Dockerfile
+│   ├── public/                        # Static assets
 │   └── .env.example                   # Frontend env template
 ├── data/
 │   ├── uploads/                 # Uploaded files (gitignored)
@@ -156,7 +164,7 @@ DocuMind/
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 - **Python 3.11+**
@@ -200,7 +208,7 @@ NVIDIA_API_KEY=your-nvidia-key          # Get from build.nvidia.com
 GROQ_API_KEY=your-groq-key             # Get from console.groq.com
 
 SUPABASE_URL=https://xxxx.supabase.co  # From Supabase Settings > API
-SUPABASE_KEY=your-service-role-key     # ⚠️ Use the service_role key (not anon)
+SUPABASE_KEY=your-service-role-key     # Use the service_role key (not anon)
 SUPABASE_JWT_SECRET=your-jwt-secret    # From Supabase Settings > API > JWT
 ```
 
@@ -210,7 +218,7 @@ cp frontend/.env.example frontend/.env
 ```
 ```env
 VITE_SUPABASE_URL=https://xxxx.supabase.co  # Same URL as above
-VITE_SUPABASE_ANON_KEY=your-anon-key        # ⚠️ Use the anon key (not service_role)
+VITE_SUPABASE_ANON_KEY=your-anon-key        # Use the anon key (not service_role)
 ```
 
 > **Note:** You only need one LLM provider key to get started. Gemini or Groq both have generous free tiers.
@@ -229,7 +237,7 @@ docker-compose up -d --build
 
 ---
 
-### 4. Option B — Run Locally (Recommended for Development)
+### 5. Option B — Run Locally (Recommended for Development)
 
 #### Backend
 
@@ -260,7 +268,7 @@ The app will open at `http://localhost:5173`.
 
 ---
 
-## 🔑 Getting Your API Keys
+## Getting Your API Keys
 
 | Provider | Free Tier | Link |
 |---|---|---|
@@ -271,7 +279,7 @@ The app will open at `http://localhost:5173`.
 
 ---
 
-## 🧪 How It Works
+## How It Works
 
 ### Document Ingestion Pipeline
 1. **Upload** — user uploads a PDF/TXT/CSV via the UI.
@@ -283,14 +291,19 @@ The app will open at `http://localhost:5173`.
 7. **Record** — file metadata is saved to Supabase Postgres for display in the UI.
 
 ### Query Pipeline (Multi-Agent)
-1. **Retrieval Agent** — performs a semantic search filtered by the authenticated user's ID. Returns top-6 chunks with relevance scores.
+1. **Retrieval Agent** — performs a semantic search filtered by the authenticated user's ID. Returns top-k chunks with relevance scores.
 2. **Reasoning Agent** — sends the chunks + user question to the chosen LLM. Generates a cited answer using `[Source N]` notation.
 3. **Critique Agent** — validates the answer: Is it grounded in the context? Did the LLM refuse when the context actually had the answer? If not grounded, rewrites the query and loops back to Retrieval (max 2 retries).
 4. **Summary Agent** — polishes the final answer for clarity and structure while preserving all citations.
 
+### Runtime Controls
+- **LLM Sensitivity** — maps to model temperature for stricter or more creative phrasing.
+- **Retrieval Depth** — controls top-k chunks used in each query.
+- **Activity Tracking** — records recent query status, model, scope, and execution settings in the Activity panel.
+
 ---
 
-## 🔒 Security
+## Security
 
 - **JWT Authentication** — every protected API endpoint validates the Bearer token against Supabase Auth using `supabase.auth.get_user()`.
 - **Row Level Security (RLS)** — Supabase Postgres enforces that users can only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` their own rows in the `files` table.
@@ -300,21 +313,21 @@ The app will open at `http://localhost:5173`.
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 All endpoints are documented interactively at `http://localhost:8000/docs`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/upload` | ✅ Required | Upload and ingest a document |
-| `POST` | `/api/agent-chat` | ✅ Required | Multi-agent pipeline query |
-| `POST` | `/api/chat` | ✅ Required | Direct single-LLM RAG query |
-| `GET` | `/api/files` | ✅ Required | List user's uploaded documents |
-| `GET` | `/api/models` | ❌ Public | List available LLM models |
+| `POST` | `/api/upload` | Required | Upload and ingest a document |
+| `POST` | `/api/agent-chat` | Required | Multi-agent pipeline query (supports `k`, `model`, `file_name`, `temperature`) |
+| `POST` | `/api/chat` | Required | Direct single-LLM RAG query (supports `k`, `model`, `temperature`) |
+| `GET` | `/api/files` | Required | List user's uploaded documents |
+| `GET` | `/api/models` | Public | List available LLM models |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -326,14 +339,14 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project does not currently include an open-source license.
 
 ---
 
 <div align="center">
 
-Built with ❤️ by [Akshat Pal](https://github.com/AkshatPal2007)
+Built by [Akshat Pal](https://github.com/AkshatPal2007)
 
 </div>

@@ -4,8 +4,8 @@ import { workspace } from '../api/client';
 const NAV_ITEMS = [
   { to: '/', icon: 'folder_open', label: 'Sources' },
   { to: '/chat', icon: 'query_stats', label: 'Intelligence' },
-  { to: '#', icon: 'precision_manufacturing', label: 'Activity' },
-  { to: '#', icon: 'settings', label: 'Settings' },
+  { to: '/activity', icon: 'precision_manufacturing', label: 'Activity' },
+  { to: '/settings', icon: 'settings', label: 'Settings' },
 ];
 
 export default function Sidebar({ onUploadClick }) {
@@ -36,7 +36,7 @@ export default function Sidebar({ onUploadClick }) {
         {NAV_ITEMS.map((item) => {
           const isActive =
             (item.to === '/' && location.pathname === '/') ||
-            (item.to !== '/' && item.to !== '#' && location.pathname.startsWith(item.to));
+            (item.to !== '/' && location.pathname.startsWith(item.to));
 
           return (
             <Link
@@ -65,11 +65,19 @@ export default function Sidebar({ onUploadClick }) {
 
       {/* Footer Links */}
       <div className="border-t border-border py-2">
-        <a href="#" className="flex items-center gap-3 px-4 py-2 text-text-muted hover:text-text-primary transition-colors text-[11px] font-bold tracking-[0.05em] uppercase">
+        <a
+          href="https://github.com/AkshatPal2007/DocuMind-AI.git"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 px-4 py-2 text-text-muted hover:text-text-primary transition-colors text-[11px] font-bold tracking-[0.05em] uppercase"
+        >
           <span className="material-symbols-outlined text-[16px]">help_outline</span>
           Documentation
         </a>
-        <a href="#" className="flex items-center gap-3 px-4 py-2 text-text-muted hover:text-text-primary transition-colors text-[11px] font-bold tracking-[0.05em] uppercase">
+        <a
+          href="mailto:akshatpc12345@gmail.com"
+          className="flex items-center gap-3 px-4 py-2 text-text-muted hover:text-text-primary transition-colors text-[11px] font-bold tracking-[0.05em] uppercase"
+        >
           <span className="material-symbols-outlined text-[16px]">api</span>
           Support
         </a>
