@@ -61,6 +61,7 @@ class Settings:
         "http://localhost:3000",
         "http://localhost:5173",
         "http://127.0.0.1:3000",
+        "https://80e0-160-202-36-121.ngrok-free.app",
     ]
 
     # ── Pipeline ─────────────────────────────────────────────────────────
