@@ -37,18 +37,25 @@ def ingest_document(file_path: str, user_id: str) -> dict:
         chunk.metadata["user_id"] = user_id
         chunk.metadata["file_name"] = file_name
 
-    # Inject a summary chunk from first 2 pages
-    # so "what is this about" / "summary" queries always hit the intro
-    first_pages = docs[:2]
-    summary_text = " ".join([d.page_content for d in first_pages])
+    # If it's a small document, we take the first few pages.
+    # If it's a large document (like a book), the first pages are just the index/copyright, 
+    # so we sample the beginning, middle, and end to give the retriever a better global concept.
+    if len(docs) <= 5:
+        summary_text = " ".join([d.page_content for d in docs[:2]])
+    else:
+        mid = len(docs) // 2
+        summary_text = (
+            f"--- BEGINNING ---\n{docs[0].page_content[:800]}\n\n"
+            f"--- MIDDLE ---\n{docs[mid].page_content[:800]}\n\n"
+            f"--- END ---\n{docs[-1].page_content[:800]}"
+        )
     
     from langchain_core.documents import Document
     summary_chunk = Document(
         page_content=(
-            f"DOCUMENT SUMMARY — {file_name}\n"
-            f"The following is the abstract and introduction of this document, "
-            f"which provides an overview and summary of its key topics:\n\n"
-            f"{summary_text[:2000]}"
+            f"DOCUMENT OVERVIEW/SUMMARY — {file_name}\n"
+            f"The following is a representative sample of the document to provide context on its overall topics:\n\n"
+            f"{summary_text}"
         ),
         metadata={
             "source": file_path,

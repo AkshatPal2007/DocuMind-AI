@@ -34,6 +34,13 @@ class VectorDBService:
         })
         return results
 
+    def delete_by_file(self, user_id: str, file_name: str):
+        try:
+            self.db._collection.delete(where={"$and": [{"user_id": {"$eq": user_id}}, {"file_name": {"$eq": file_name}}]})
+            logger.info("Documents deleted from Chroma", extra={"user_id": user_id, "file": file_name})
+        except Exception as e:
+            logger.error("Failed to delete from vector db", extra={"error": str(e)})
+
     def get_collection_count(self) -> int:
         return self.db._collection.count()
     

@@ -19,17 +19,18 @@ export default function DocumentList({ selectedDoc, onSelectDoc }) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadDocs() {
-      try {
-        const files = await api.getFiles();
-        setDocs(files);
-      } catch (e) {
-        console.error("Failed to load documents", e);
-      } finally {
-        setLoading(false);
-      }
+  async function loadDocs() {
+    try {
+      const files = await api.getFiles();
+      setDocs(files);
+    } catch (e) {
+      console.error("Failed to load documents", e);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadDocs();
     
     // Set up an interval to refresh docs every few seconds if needed
@@ -37,6 +38,24 @@ export default function DocumentList({ selectedDoc, onSelectDoc }) {
     const interval = setInterval(loadDocs, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDelete = async (e, fileName) => {
+    e.stopPropagation();
+    if (!confirm(`Are you sure you want to delete ${fileName}?`)) return;
+    
+    try {
+      setLoading(true);
+      await api.deleteFile(fileName);
+      if (selectedDoc === fileName) {
+        onSelectDoc?.(null);
+      }
+      await loadDocs();
+    } catch (err) {
+      alert("Failed to delete file: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-72 border-r border-border bg-surface-raised flex flex-col h-full shrink-0">
@@ -68,7 +87,7 @@ export default function DocumentList({ selectedDoc, onSelectDoc }) {
               <div
                 key={doc.id}
                 onClick={() => onSelectDoc?.(isSelected ? null : doc.file_name)}
-                className={`p-3 border rounded cursor-pointer transition-colors group animate-fadeIn ${
+                className={`p-3 border rounded cursor-pointer transition-colors group animate-fadeIn relative ${
                   isSelected
                     ? 'border-accent-dim bg-surface-high relative overflow-hidden'
                     : 'border-border bg-surface-overlay hover:border-accent-dim'
@@ -94,6 +113,15 @@ export default function DocumentList({ selectedDoc, onSelectDoc }) {
                     {isSelected ? 'check_circle' : 'arrow_forward'}
                   </span>
                 </div>
+                
+                {/* Delete Button (visible on hover) */}
+                <span 
+                  className="material-symbols-outlined absolute top-2 right-2 text-[16px] text-text-secondary hover:text-red p-1 rounded-full hover:bg-surface-raised opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  onClick={(e) => handleDelete(e, doc.file_name)}
+                  title="Delete file"
+                >
+                  delete
+                </span>
               </div>
             );
           })

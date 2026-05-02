@@ -3,7 +3,7 @@ import os
 from typing import Generator
 
 _client = None
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
 
 SYSTEM_PROMPT = """You are DocuMind, an intelligent document assistant.
 Answer questions ONLY based on the provided context.

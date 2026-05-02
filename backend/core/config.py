@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Project Root ─────────────────────────────────────────────────────────
-# Resolve project root (2 levels up from this file: backend/core/config.py → project root)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
@@ -40,7 +39,7 @@ class Settings:
 
     # ── Embedding Model ──────────────────────────────────────────────────
     EMBEDDING_MODEL: str = os.getenv(
-        "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        "EMBEDDING_MODEL", "BAAI/bge-base-en-v1.5"
     )
     EMBEDDING_DEVICE: str = os.getenv("EMBEDDING_DEVICE", "cpu")
 

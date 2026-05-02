@@ -49,7 +49,7 @@ async def chat(req: ChatRequest, stream: bool = Query(default=False), user_id: s
     )
 
 
-# ── Multi-Agent endpoint (Phase 6) ──────────────────────────────────────
+# ── Multi-Agent endpoint  ──────────────────────────────────────
 
 @router.post("/agent-chat")
 async def agent_chat(req: ChatRequest, user_id: str = Depends(get_current_user)):

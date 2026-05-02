@@ -1,6 +1,6 @@
 # backend/api/routes/upload.py
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from backend.services.ingestion import ingest_document
+from backend.agents.ingestion_agent import IngestionAgent
 from backend.api.deps import get_upload_dir, get_current_user
 from backend.core.logger import get_logger
 import shutil, os
@@ -31,7 +31,8 @@ async def upload_file(
 
     # Trigger ingestion
     try:
-        result = ingest_document(file_path, user_id)
+        agent = IngestionAgent()
+        result = agent.run(file_path, user_id=user_id)
         logger.info("Ingestion complete", extra={
             "file": file.filename, "chunks": result["chunks"], "total": result["total_indexed"]
         })

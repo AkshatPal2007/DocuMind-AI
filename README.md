@@ -28,6 +28,8 @@ Every user gets their own private workspace. Documents uploaded by User A are ne
 
 ## Architecture Overview
 
+![DocuMind Architecture Diagram](frontend/public/diagram.png)
+
 ```
 User Query
     │
@@ -56,14 +58,15 @@ User Query
 
 | Feature | Details |
 |---|---|
-| **Document Upload** | PDF, TXT, CSV support with intelligent chunking and smart chunk-type detection (glossary, table, reference, content) |
+| **Document Upload** | PDF, TXT, CSV support up to 50MB with intelligent chunking (glossary, table, reference, content) |
 | **Multi-Agent Pipeline** | LangGraph stateful graph with 4 specialized agents: Retrieval → Reasoning → Critique → Summary |
-| **Semantic Search** | Sentence-Transformers embeddings (`all-MiniLM-L6-v2`) stored in ChromaDB with user-scoped metadata filters |
+| **Semantic Search** | HuggingFace embeddings (`BAAI/bge-base-en-v1.5`) stored in ChromaDB with user-scoped metadata filters |
 | **Authentication** | Supabase Auth (email/password) with JWT validation; full per-user data isolation |
 | **Multi-Tenant** | Users only see and query their own documents — enforced at both the API and database (Postgres RLS) layers |
+| **Self-Healing Storage** | Fully purges orphaned document vectors across Postgres, disk, and ChromaDB upon source deletion |
 | **Source Citations** | Every answer includes `[Source N]` citations referencing the exact document, page, and relevance score |
 | **Self-Critique & Retry** | Critique Agent detects hallucinations and false refusals; rewrites the retrieval query and retries up to 2 times |
-| **Multi-Provider LLM** | Switch between Gemini 2.5 Flash, Llama 3.3 70B (NVIDIA / Groq), DeepSeek V3 from the UI |
+| **Multi-Provider LLM** | Switch between Gemini 2.5 Flash, Llama 3.3 70B (NVIDIA / Groq), MiniMax m2.7 from the UI |
 | **Agent Telemetry** | Live sidebar shows each agent's status (Waiting → Processing → Complete) in real time |
 | **Runtime Controls** | Settings panel supports configurable LLM sensitivity (temperature) and retrieval depth (top-k) |
 | **Activity Log** | Activity panel shows recent query outcomes, model selection, scope, and execution settings |
@@ -77,7 +80,7 @@ User Query
 - **[FastAPI](https://fastapi.tiangolo.com/)** — async REST API
 - **[LangGraph](https://langchain-ai.github.io/langgraph/)** — stateful multi-agent orchestration
 - **[ChromaDB](https://trychroma.com/)** — local vector database for semantic search
-- **[Sentence-Transformers](https://sbert.net/)** — local embedding model (`all-MiniLM-L6-v2`)
+- **[Sentence-Transformers](https://sbert.net/)** — local embedding model (`BAAI/bge-base-en-v1.5`)
 - **[Supabase](https://supabase.com/)** — authentication (Auth) + PostgreSQL for file metadata
 - **[python-docx](https://python-docx.readthedocs.io/) / [pypdf](https://pypdf.readthedocs.io/)** — document parsing
 
@@ -94,8 +97,8 @@ User Query
 - **[Uvicorn](https://www.uvicorn.org/)** — ASGI server for FastAPI
 
 ### LLM Providers
-- **[Google Gemini](https://ai.google.dev/)** — Gemini 2.5 Flash, Gemini 2.0 Flash
-- **[NVIDIA NIM](https://build.nvidia.com/)** — Llama 3.3 70B, Llama 3.1 8B, DeepSeek V3
+- **[Google Gemini](https://ai.google.dev/)** — Gemini 2.5 Flash
+- **[NVIDIA NIM](https://build.nvidia.com/)** — Llama 3.3 70B, Llama 3.1 8B, MiniMax m2.7
 - **[Groq](https://groq.com/)** — Llama 3.1 8B (ultra-fast inference), Llama 3.3 70B
 
 ---
@@ -286,7 +289,7 @@ The app will open at `http://localhost:5173`.
 2. **Parse** — file is parsed page-by-page using `PyPDF` / `TextLoader`.
 3. **Chunk** — text is split into 500-character chunks with 150-char overlap using `RecursiveCharacterTextSplitter`.
 4. **Type Detection** — each chunk is classified (content / reference / table / header / noise) to aid future filtering.
-5. **Embed** — chunks are converted to 384-dimensional vectors using `sentence-transformers/all-MiniLM-L6-v2` (runs locally, no API cost).
+5. **Embed** — chunks are converted to 768-dimensional vectors using `BAAI/bge-base-en-v1.5` (runs locally, no API cost).
 6. **Store** — vectors + metadata (including `user_id` and `file_name`) are stored in ChromaDB.
 7. **Record** — file metadata is saved to Supabase Postgres for display in the UI.
 
@@ -319,10 +322,11 @@ All endpoints are documented interactively at `http://localhost:8000/docs`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/upload` | Required | Upload and ingest a document |
+| `POST` | `/api/upload` | Required | Upload and ingest a document (up to 50MB) |
+| `DELETE` | `/api/files/{file_name}` | Required | Deep-delete document (Disk, Postgres, and ChromaDB) |
 | `POST` | `/api/agent-chat` | Required | Multi-agent pipeline query (supports `k`, `model`, `file_name`, `temperature`) |
 | `POST` | `/api/chat` | Required | Direct single-LLM RAG query (supports `k`, `model`, `temperature`) |
-| `GET` | `/api/files` | Required | List user's uploaded documents |
+| `GET` | `/api/files` | Required | List user's documents (Auto-prunes broken links) |
 | `GET` | `/api/models` | Public | List available LLM models |
 
 ---

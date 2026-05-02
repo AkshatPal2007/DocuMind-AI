@@ -16,7 +16,8 @@ export function AIMessage({ text, metadata, sources }) {
   // Parse [Source N] references and style them
   const renderText = (raw) => {
     if (!raw) return null;
-    const parts = raw.split(/(\[Source \d+\])/g);
+    // Split on [Source X] OR **bold text**
+    const parts = raw.split(/(\[Source \d+\]|\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (/^\[Source \d+\]$/.test(part)) {
         return (
@@ -24,6 +25,9 @@ export function AIMessage({ text, metadata, sources }) {
             {part}
           </span>
         );
+      }
+      if (/^\*\*.*\*\*$/.test(part)) {
+        return <strong key={i} className="font-semibold text-text-primary">{part.slice(2, -2)}</strong>;
       }
       return <span key={i}>{part}</span>;
     });
@@ -70,10 +74,10 @@ export function AIMessage({ text, metadata, sources }) {
         continue;
       }
 
-      // Bold wrapped text: **text**
-      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+      // Bold wrapped text: **text** (Wait, let's keep the block rule if it's the exact whole line, but inline is handled above)
+      if (trimmed.startsWith('**') && trimmed.endsWith('**') && !trimmed.slice(2, -2).includes('**')) {
         flushList();
-        elements.push(<p key={i} className="text-[14px] font-semibold text-text-primary mt-2">{renderText(trimmed.slice(2, -2))}</p>);
+        elements.push(<p key={i} className="text-[14px] mt-2">{renderText(trimmed)}</p>);
         continue;
       }
 

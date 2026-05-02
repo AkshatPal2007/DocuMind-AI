@@ -78,6 +78,19 @@ export const api = {
     const data = await res.json();
     return data.files || [];
   },
+
+  async deleteFile(fileName) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/files/${encodeURIComponent(fileName)}`, {
+      method: 'DELETE',
+      headers: { ...headers }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Delete failed');
+    }
+    return res.json();
+  }
 };
 
 // Workspace localStorage persistence

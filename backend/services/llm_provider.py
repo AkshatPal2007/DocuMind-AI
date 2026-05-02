@@ -23,13 +23,6 @@ AVAILABLE_MODELS = [
         "env_key": "GEMINI_API_KEY",
     },
     {
-        "id": "gemini/gemini-2.0-flash",
-        "name": "Gemini 2.0 Flash",
-        "provider": "gemini",
-        "model": "gemini-2.0-flash",
-        "env_key": "GEMINI_API_KEY",
-    },
-    {
         "id": "nvidia/meta/llama-3.3-70b-instruct",
         "name": "Llama 3.3 70B (NVIDIA)",
         "provider": "nvidia",
@@ -44,10 +37,10 @@ AVAILABLE_MODELS = [
         "env_key": "NVIDIA_API_KEY",
     },
     {
-        "id": "nvidia/deepseek-ai/deepseek-v3",
-        "name": "DeepSeek V3 (NVIDIA)",
+        "id": "nvidia/minimaxai/minimax-m2.7",
+        "name": "MiniMax m2.7 (NVIDIA)",
         "provider": "nvidia",
-        "model": "deepseek-ai/deepseek-v3",
+        "model": "minimaxai/minimax-m2.7",
         "env_key": "NVIDIA_API_KEY",
     },
     {

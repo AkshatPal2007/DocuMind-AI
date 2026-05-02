@@ -45,4 +45,17 @@ class DBService:
             logger.error("Failed to retrieve file records", extra={"error": str(e)})
             return []
 
+    def delete_file(self, user_id: str, file_name: str):
+        """Delete a file record for a given user."""
+        if not self.supabase:
+            return None
+        
+        try:
+            res = self.supabase.table("files").delete().eq("user_id", user_id).eq("file_name", file_name).execute()
+            logger.info("File record deleted from Postgres", extra={"file": file_name})
+            return res.data
+        except Exception as e:
+            logger.error("Failed to delete file record", extra={"error": str(e)})
+            raise
+
 db_service = DBService()
