@@ -26,6 +26,12 @@ Every user gets their own private workspace. Documents uploaded by User A are ne
 
 ---
 
+## Intro Video
+
+Watch the project walkthrough here: **[DocuMind Intro Video](frontend/public/DocuMind_Intro.mp4)**
+
+---
+
 ## Architecture Overview
 
 ![DocuMind Architecture Diagram](frontend/public/diagram.png)
